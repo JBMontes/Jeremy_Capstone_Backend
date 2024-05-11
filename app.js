@@ -25,7 +25,7 @@ app.post('/sendSMS', async (req, res) => {
       for (const phoneNumber of to) {
         const response = await client.messages.create({
           body: message,
-          from: '+18442507058',
+          from: '+18336332155',
           to: phoneNumber
         });
         console.log(`SMS sent to ${phoneNumber} successfully:`, response.sid);
@@ -34,7 +34,7 @@ app.post('/sendSMS', async (req, res) => {
       // Send single SMS
       const response = await client.messages.create({
         body: message,
-        from: '+18442507058',
+        from: '+18336332155',
         to: to
       });
       console.log('SMS sent successfully:', response.sid)
