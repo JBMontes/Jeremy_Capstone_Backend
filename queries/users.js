@@ -3,25 +3,21 @@ const bcrypt = require("bcrypt");
 
 // for development purposes only
 const getUsers = async () => {
-  try {
+
     const users = await db.any("SELECT * FROM users");
     return users;
-  } catch (err) {
-    return err;
-  }
+  
 };
 
 const getUser = async (id) => {
-  try {
+
     const user = await db.one("SELECT * FROM users WHERE user_id=$1", id);
     return user;
-  } catch (err) {
-    return err;
-  }
+
 };
 
 const createUser = async (user) => {
-  try {
+
     const { name, username, password_hash, email, phone_number, profile_picture_url } =
       user;
     const salt = 10;
@@ -34,13 +30,11 @@ const createUser = async (user) => {
       [name, username, hash, email, phone_number, profilePic]
     );
     return newUser;
-  } catch (err) {
-    return err;
-  }
+  
 };
 
 const logInUser = async (user) => {
-  try {
+
     const loggedInUser = await db.oneOrNone(
       "SELECT * FROM users WHERE username=$1",
       user.username
@@ -52,15 +46,13 @@ const logInUser = async (user) => {
     );
     if (!passwordMatch) return false;
     return loggedInUser;
-  } catch (err) {
-    return err;
-  }
+ 
 };
 
 const updateUser = async (id, updatedUser) => {
   const { password_hash } = updatedUser
   if (password_hash) {
-    try {
+   
       const { name, username, password_hash, email, phone_number, profile_picture_url } =
         updatedUser;
       const salt = 10;
@@ -73,11 +65,9 @@ const updateUser = async (id, updatedUser) => {
         [name, username, hash, email, phone_number, profilePic, id]
       );
       return updated;
-    } catch (err) {
-      return err;
-    }
+   
   } else {
-    try {
+ 
       const { name, username, email, phone_number, profile_picture_url } =
         updatedUser;
       const profilePic = profile_picture_url
@@ -88,19 +78,14 @@ const updateUser = async (id, updatedUser) => {
         [name, username, email, phone_number, profilePic, id]
       );
       return updated;
-    } catch (err) {
-      return err;
-    }
+
   }
 };
 
 const deleteUser = async (id) => {
-  try {
     const deletedUser = await db.none("DELETE FROM users WHERE user_id=$1", id);
     return deletedUser;
-  } catch (err) {
-    return err;
-  }
+
 };
 
 module.exports = {
