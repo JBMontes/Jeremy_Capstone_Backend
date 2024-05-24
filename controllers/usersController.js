@@ -18,8 +18,9 @@ const {
   validateLoginInput,
   checkDuplicateEmail,
   checkDuplicatePhoneNumber,
-  checkDuplicateUsername
-} = require("../validations/checkUser.js")
+  checkDuplicateUsername,
+  isValidId,
+} = require("../validations/checkUser.js");
 const contactsController = require("./contactsController");
 users.use("/contacts", contactsController);
 
@@ -32,46 +33,62 @@ users.use("/villages", villagesController);
 const villageUsersController = require("./villageUsersController");
 users.use("/village-users", villageUsersController);
 
-const villageJoinRequestsController = require("./villageJoinRequestsController")
-users.use("/villageJoinRequests", villageJoinRequestsController)
+const villageJoinRequestsController = require("./villageJoinRequestsController");
+users.use("/villageJoinRequests", villageJoinRequestsController);
 
 users.get("/", async (req, res) => {
   try {
     const users = await getUsers();
     res.status(200).json(users);
   } catch (err) {
-    res.status(404).json({ error: err });
+    res.status(500).json({ error: err.message });
   }
 });
 
-users.get("/:id", async (req, res) => {
-  const { id } = req.params;
+users.get("/:id", isValidId, async (req, res) => {
   try {
+    const { id } = req.params;
     const user = await getUser(id);
+    if (!user) {
+      return res.status(404).json({ error: `User id: ${id} not found.` });
+    }
     res.status(200).json(user);
   } catch (err) {
-    res.status(404).json({ error: err });
+    res.status(500).json({ error: err.message });
   }
 });
 
-users.post("/sign-up", checkRequiredFields, validateEmail, validatePhoneNumber, checkDuplicateUsername, checkDuplicateEmail, checkDuplicatePhoneNumber, async (req, res) => {
-  try {
-    const newUser = await createUser(req.body);
-    const token = jwt.sign(
-      { user_id: newUser.user_id, name: newUser.name, username: newUser.username },
-      secret
-    );
-    res.status(201).json({ user: newUser, token });
-  } catch (err) {
-    res.status(500).json({ error: "Invalid Information", info: err });
+users.post(
+  "/sign-up",
+  checkRequiredFields,
+  validateEmail,
+  validatePhoneNumber,
+  checkDuplicateUsername,
+  checkDuplicateEmail,
+  checkDuplicatePhoneNumber,
+  async (req, res) => {
+    try {
+      const newUser = await createUser(req.body);
+      const token = jwt.sign(
+        {
+          user_id: newUser.user_id,
+          name: newUser.name,
+          username: newUser.username,
+        },
+        secret
+      );
+      res.status(201).json({ user: newUser, token });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
   }
-});
+);
 
 users.post("/login", validateLoginInput, async (req, res) => {
   try {
     const user = await logInUser(req.body);
     if (!user) {
-      res.status(401).json({ error: "Invalid username or password" });
+      res.status(400).json({ error: "Invalid username or password" });
       return;
     }
 
@@ -94,28 +111,36 @@ users.post("/login", validateLoginInput, async (req, res) => {
       token,
     });
   } catch (err) {
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: err.message });
   }
 });
 
-users.put("/:id", async (req, res) => {
-  const { id } = req.params;
-  const updatedUser = req.body;
+users.put("/:id", isValidId, async (req, res) => {
   try {
-    await updateUser(id, updatedUser);
-    res.status(200).json({ message: "User updated successfully" });
+    const { id } = req.params;
+
+    const validUserByID = await getUser(id);
+    if (!validUserByID) {
+      return res.status(404).json({ error: `User id: ${id} not found.` });
+    }
+    const update = req.body;
+    const updatedUser = await updateUser(id, update);
+    res.status(200).json({ data: updatedUser });
   } catch (err) {
-    res.status(500).json({ error: "Error updating user" });
+    res.status(500).json({ error: err.message });
   }
 });
 
-users.delete("/:id", async (req, res) => {
-  const { id } = req.params;
+users.delete("/:id", isValidId, async (req, res) => {
   try {
-    await deleteUser(id);
-    res.status(200).json({ message: "User deleted successfully" });
+    const { id } = req.params;
+    const removeUser = await deleteUser(id);
+    if (!removeUser) {
+      return res.status(404).json({ error: `User id: ${id} not found` });
+    }
+    res.status(200).json({ data: removeUser });
   } catch (err) {
-    res.status(404).json({ error: err });
+    res.status(500).json({ error: err.message });
   }
 });
 
