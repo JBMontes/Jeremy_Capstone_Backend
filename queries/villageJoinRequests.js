@@ -2,7 +2,7 @@ const db = require("../db/dbConfig");
 
 const createJoinRequest = async (user_id, village_id) => {
 
-        const joinRequest = await db.one(
+        const joinRequest = await db.oneOrNone(
             "INSERT INTO village_join_requests (user_id, village_id) VALUES ($1, $2) RETURNING *",
             [user_id, village_id]
         );

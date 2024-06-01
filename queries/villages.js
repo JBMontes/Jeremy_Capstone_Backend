@@ -13,7 +13,7 @@ const generateVillageCode = () => {
 const createVillage = async (village_name, creator_id) => {
 
     const village_code = generateVillageCode();
-    const village = await db.one(
+    const village = await db.oneOrNone(
       "INSERT INTO villages (village_name, village_code, creator_id) VALUES ($1, $2, $3) RETURNING *",
       [village_name, village_code, creator_id]
     );

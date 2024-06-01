@@ -23,7 +23,7 @@ const getContactByIdAndUserId = async (contact_id, user_id) => {
 const createContact = async (contact) => {
   const { firstname, lastname, phone_number, user_id } = contact;
 
-    const newContact = await db.one(
+    const newContact = await db.oneOrNone(
       "INSERT INTO contacts (firstname, lastname, phone_number, user_id) VALUES ($1, $2, $3, $4) RETURNING *",
       [firstname, lastname, phone_number, user_id]
     );

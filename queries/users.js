@@ -11,7 +11,7 @@ const getUsers = async () => {
 
 const getUser = async (id) => {
 
-    const user = await db.one("SELECT * FROM users WHERE user_id=$1", id);
+    const user = await db.oneOrNone("SELECT * FROM users WHERE user_id=$1", id);
     return user;
 
 };
@@ -25,7 +25,7 @@ const createUser = async (user) => {
     const profilePic = profile_picture_url
       ? profile_picture_url
       : "/static/default_profile_pic.webp";
-    const newUser = await db.one(
+    const newUser = await db.oneOrNone(
       "INSERT INTO users (name, username, password_hash, email, phone_number, profile_picture_url) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
       [name, username, hash, email, phone_number, profilePic]
     );

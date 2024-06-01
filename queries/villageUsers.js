@@ -12,7 +12,7 @@ const getUserByPhoneNumber = async (phone_number) => {
 
 const createVillageUser = async (user_id, village_id, is_admin) => {
 
-    const villageUser = await db.one(
+    const villageUser = await db.oneOrNone(
       "INSERT INTO village_users (user_id, village_id, is_admin) VALUES ($1, $2, $3) RETURNING *",
       [user_id, village_id, is_admin]
     );
@@ -52,7 +52,7 @@ const deleteVillageUser = async (village_user_id) => {
 
 const getVillageUser = async (village_id, user_id) => {
 
-    const villageUser = await db.one(
+    const villageUser = await db.oneOrNone(
       "SELECT * FROM village_users WHERE village_id=$1 AND user_id=$2",
       [village_id, user_id]
     );
