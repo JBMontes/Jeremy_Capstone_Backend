@@ -10,8 +10,17 @@ const getUsers = async () => {
 };
 
 const getUser = async (id) => {
-
-    const user = await db.oneOrNone("SELECT * FROM users WHERE user_id=$1", id);
+//LEFT JOIN ensures that users w/o contacts or medical are still included
+    const user = await db.oneOrNone(`SELECT 
+    users.*, 
+    TO_JSON(ARRAY_AGG(contacts)) AS contacts,
+    TO_JSON(ARRAY_AGG(medical)) AS medical
+FROM users
+LEFT JOIN contacts ON users.user_id = contacts.user_id
+LEFT JOIN medical ON users.user_id = medical.user_id
+WHERE user_id=$1
+GROUP BY users.user_id
+ORDER BY users.user_id `, id);
     return user;
 
 };
